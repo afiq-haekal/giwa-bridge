@@ -55,6 +55,12 @@ const WithdrawETH = ({ clients, account, onSwitchToGiwa }) => {
     setCurrentStep(0);
 
     try {
+      // Step 0: Switch to GIWA Sepolia network
+      setStatus('Switching to GIWA Sepolia network...');
+      if (onSwitchToGiwa) {
+        await onSwitchToGiwa();
+      }
+
       // Step 1: Build withdrawal parameters
       setStatus('Building withdrawal transaction...');
       setCurrentStep(1);
@@ -65,7 +71,10 @@ const WithdrawETH = ({ clients, account, onSwitchToGiwa }) => {
 
       // Step 2: Initiate withdrawal on L2
       setStatus('Initiating withdrawal on GIWA...');
-      const withdrawalHash = await clients.walletClientL2.initiateWithdrawal(withdrawalArgs);
+      const withdrawalHash = await clients.walletClientL2.initiateWithdrawal({
+        ...withdrawalArgs,
+        account: account, // Pass account explicitly for viem v2
+      });
       setTxHash(withdrawalHash);
       
       setStatus('Waiting for L2 confirmation...');
@@ -91,7 +100,10 @@ const WithdrawETH = ({ clients, account, onSwitchToGiwa }) => {
         withdrawal,
       });
 
-      const proveHash = await clients.walletClientL1.proveWithdrawal(proveArgs);
+      const proveHash = await clients.walletClientL1.proveWithdrawal({
+        ...proveArgs,
+        account: account, // Pass account explicitly for viem v2
+      });
       
       await clients.publicClientL1.waitForTransactionReceipt({ hash: proveHash });
 

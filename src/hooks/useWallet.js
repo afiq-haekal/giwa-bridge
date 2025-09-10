@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createPublicClient, createWalletClient, custom, http } from 'viem';
 import { publicActionsL1, publicActionsL2, walletActionsL1, walletActionsL2 } from 'viem/op-stack';
 import { sepolia, giwaSepolia } from '../config/chains';
@@ -29,46 +29,49 @@ export const useWallet = () => {
     }
   };
 
-  const setupClients = (address) => {
-    console.log('Setting up clients for address:', address);
+  const setupClients = useCallback(async (currentAccount) => {
+    if (!currentAccount) return;
+
     try {
-      // Public client untuk read operations di Ethereum Sepolia
-      const publicClientL1 = createPublicClient({
+      console.log('Setting up clients for account:', currentAccount);
+
+      // Public client for Ethereum Sepolia (reading data)
+      const pubClientL1 = createPublicClient({
         chain: sepolia,
-        transport: http(),
+        transport: http(), // Default RPC sesuai docs GIWA
       }).extend(publicActionsL1());
 
-      // Wallet client untuk transactions di Ethereum Sepolia
+      // Wallet client for Ethereum Sepolia (sending transactions)
+      // Create wallet client dengan MetaMask transport dan account
       const walletClientL1 = createWalletClient({
         chain: sepolia,
         transport: custom(window.ethereum),
       }).extend(walletActionsL1());
 
-      // Public client untuk read operations di GIWA Sepolia
-      const publicClientL2 = createPublicClient({
+      // Public client for GIWA Sepolia (reading data)
+      const pubClientL2 = createPublicClient({
         chain: giwaSepolia,
-        transport: http(),
+        transport: http(), // Default RPC sesuai docs GIWA
       }).extend(publicActionsL2());
 
-      // Wallet client untuk transactions di GIWA Sepolia
+      // Wallet client for GIWA Sepolia (sending transactions)
       const walletClientL2 = createWalletClient({
         chain: giwaSepolia,
         transport: custom(window.ethereum),
       }).extend(walletActionsL2());
 
-      const clientsObj = {
-        publicClientL1,
-        walletClientL1,
-        publicClientL2,
-        walletClientL2,
-      };
-      
-      console.log('Clients setup completed:', clientsObj);
-      setClients(clientsObj);
+      setClients({
+        publicClientL1: pubClientL1,
+        walletClientL1: walletClientL1,
+        publicClientL2: pubClientL2,
+        walletClientL2: walletClientL2,
+      });
+
+      console.log('Clients setup completed');
     } catch (error) {
       console.error('Error setting up clients:', error);
     }
-  };
+  }, []);
 
   const connectWallet = async () => {
     if (typeof window.ethereum === 'undefined') {

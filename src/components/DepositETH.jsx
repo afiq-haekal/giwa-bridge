@@ -46,6 +46,12 @@ const DepositETH = ({ clients, account, onSwitchToSepolia }) => {
     setTxHash('');
 
     try {
+      // Step 0: Switch to Ethereum Sepolia network
+      setStatus('Switching to Ethereum Sepolia network...');
+      if (onSwitchToSepolia) {
+        await onSwitchToSepolia();
+      }
+
       // Build deposit parameters
       setStatus('Building deposit transaction...');
       const depositArgs = await clients.publicClientL2.buildDepositTransaction({
@@ -55,7 +61,10 @@ const DepositETH = ({ clients, account, onSwitchToSepolia }) => {
 
       // Send deposit transaction on L1
       setStatus('Sending deposit transaction on Ethereum...');
-      const depositHash = await clients.walletClientL1.depositTransaction(depositArgs);
+      const depositHash = await clients.walletClientL1.depositTransaction({
+        ...depositArgs,
+        account: account, // Pass account explicitly for viem v2
+      });
       setTxHash(depositHash);
       
       setStatus('Waiting for L1 confirmation...');
