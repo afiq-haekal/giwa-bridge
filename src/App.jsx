@@ -5,7 +5,7 @@ import DepositETH from './components/DepositETH';
 import WithdrawETH from './components/WithdrawETH';
 
 function App() {
-  const { isConnected } = useWallet();
+  const { isConnected, account, clients, switchToSepolia, switchToGiwa } = useWallet();
   const [activeTab, setActiveTab] = useState('deposit');
 
   return (
@@ -90,7 +90,19 @@ function App() {
               {/* Tab Content */}
               <div className="relative">
                 <div className="bg-gray-800/60 border border-gray-700 rounded-3xl shadow-2xl overflow-hidden">
-                  {activeTab === 'deposit' ? <DepositETH /> : <WithdrawETH />}
+                  {activeTab === 'deposit' ? (
+                    <DepositETH 
+                      clients={clients} 
+                      account={account} 
+                      onSwitchToSepolia={switchToSepolia} 
+                    />
+                  ) : (
+                    <WithdrawETH 
+                      clients={clients} 
+                      account={account} 
+                      onSwitchToGiwa={switchToGiwa} 
+                    />
+                  )}
                 </div>
               </div>
 

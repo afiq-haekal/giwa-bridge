@@ -30,38 +30,44 @@ export const useWallet = () => {
   };
 
   const setupClients = (address) => {
-    // Public client untuk read operations di Ethereum Sepolia
-    const publicClientL1 = createPublicClient({
-      chain: sepolia,
-      transport: http(),
-    }).extend(publicActionsL1());
+    console.log('Setting up clients for address:', address);
+    try {
+      // Public client untuk read operations di Ethereum Sepolia
+      const publicClientL1 = createPublicClient({
+        chain: sepolia,
+        transport: http(),
+      }).extend(publicActionsL1());
 
-    // Wallet client untuk transactions di Ethereum Sepolia
-    const walletClientL1 = createWalletClient({
-      account: address,
-      chain: sepolia,
-      transport: custom(window.ethereum),
-    }).extend(walletActionsL1());
+      // Wallet client untuk transactions di Ethereum Sepolia
+      const walletClientL1 = createWalletClient({
+        chain: sepolia,
+        transport: custom(window.ethereum),
+      }).extend(walletActionsL1());
 
-    // Public client untuk read operations di GIWA Sepolia
-    const publicClientL2 = createPublicClient({
-      chain: giwaSepolia,
-      transport: http(),
-    }).extend(publicActionsL2());
+      // Public client untuk read operations di GIWA Sepolia
+      const publicClientL2 = createPublicClient({
+        chain: giwaSepolia,
+        transport: http(),
+      }).extend(publicActionsL2());
 
-    // Wallet client untuk transactions di GIWA Sepolia
-    const walletClientL2 = createWalletClient({
-      account: address,
-      chain: giwaSepolia,
-      transport: custom(window.ethereum),
-    }).extend(walletActionsL2());
+      // Wallet client untuk transactions di GIWA Sepolia
+      const walletClientL2 = createWalletClient({
+        chain: giwaSepolia,
+        transport: custom(window.ethereum),
+      }).extend(walletActionsL2());
 
-    setClients({
-      publicClientL1,
-      walletClientL1,
-      publicClientL2,
-      walletClientL2,
-    });
+      const clientsObj = {
+        publicClientL1,
+        walletClientL1,
+        publicClientL2,
+        walletClientL2,
+      };
+      
+      console.log('Clients setup completed:', clientsObj);
+      setClients(clientsObj);
+    } catch (error) {
+      console.error('Error setting up clients:', error);
+    }
   };
 
   const connectWallet = async () => {
@@ -72,14 +78,17 @@ export const useWallet = () => {
 
     setIsLoading(true);
     try {
+      console.log('Connecting wallet...');
       const accounts = await window.ethereum.request({
         method: 'eth_requestAccounts',
       });
       
+      console.log('Accounts:', accounts);
       if (accounts.length > 0) {
         setAccount(accounts[0]);
         setIsConnected(true);
         setupClients(accounts[0]);
+        console.log('Wallet connected successfully:', accounts[0]);
       }
     } catch (error) {
       console.error('Error connecting wallet:', error);
